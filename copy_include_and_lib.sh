@@ -1,24 +1,27 @@
-rm -rf include
-rm -rf lib
+rm -rf output
 
-mkdir include
-mkdir lib
+mkdir output
+mkdir output/include
+mkdir output/lib
 
-cp c99/msinttypes/*.h include/
+OUTPUT_INCLUDE=output/include
+OUTPUT_LIB=output/lib
 
-cp -R /usr/local/include/libavdevice include/
-cp -R /usr/local/include/libavfilter include/
-cp -R /usr/local/include/libavformat include/
-cp -R /usr/local/include/libavcodec include/
-cp -R /usr/local/include/libswresample include/
-cp -R /usr/local/include/libswscale include/
-cp -R /usr/local/include/libavutil include/
+cp c99/msinttypes/*.h $OUTPUT_INCLUDE/
 
-cp /usr/local/lib/libavdevice.a lib/libavdevice.lib
-cp /usr/local/lib/libavfilter.a lib/libavfilter.lib
-cp /usr/local/lib/libavformat.a lib/libavformat.lib
-cp /usr/local/lib/libavcodec.a lib/libavcodec.lib
-cp /usr/local/lib/libswresample.a lib/libswresample.lib
-cp /usr/local/lib/libswscale.a lib/libswscale.lib
-cp /usr/local/lib/libavutil.a lib/libavutil.lib
+cp -R /usr/local/include/libavdevice $OUTPUT_INCLUDE/
+cp -R /usr/local/include/libavfilter $OUTPUT_INCLUDE/
+cp -R /usr/local/include/libavformat $OUTPUT_INCLUDE/
+cp -R /usr/local/include/libavcodec $OUTPUT_INCLUDE/
+cp -R /usr/local/include/libswresample $OUTPUT_INCLUDE/
+cp -R /usr/local/include/libswscale $OUTPUT_INCLUDE/
+cp -R /usr/local/include/libavutil $OUTPUT_INCLUDE/
+
+cp /usr/local/lib/libavdevice.a $OUTPUT_LIB/libavdevice.lib
+cp /usr/local/lib/libavfilter.a $OUTPUT_LIB/libavfilter.lib
+cp /usr/local/lib/libavformat.a $OUTPUT_LIB/libavformat.lib
+cp /usr/local/lib/libavcodec.a $OUTPUT_LIB/libavcodec.lib
+cp /usr/local/lib/libswresample.a $OUTPUT_LIB/libswresample.lib
+cp /usr/local/lib/libswscale.a $OUTPUT_LIB/libswscale.lib
+cp /usr/local/lib/libavutil.a $OUTPUT_LIB/libavutil.lib
 
