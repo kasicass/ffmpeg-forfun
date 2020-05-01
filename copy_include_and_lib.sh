@@ -7,7 +7,7 @@ mkdir output/lib
 OUTPUT_INCLUDE=output/include
 OUTPUT_LIB=output/lib
 
-cp c99/msinttypes/*.h $OUTPUT_INCLUDE/
+cp c99/msinttypes/inttypes.h $OUTPUT_INCLUDE/
 
 cp -R /usr/local/include/libavdevice $OUTPUT_INCLUDE/
 cp -R /usr/local/include/libavfilter $OUTPUT_INCLUDE/
