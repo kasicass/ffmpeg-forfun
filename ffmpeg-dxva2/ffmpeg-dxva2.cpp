@@ -7,6 +7,11 @@
 #include "ffmpeg_dxva2.h"
 #include "D3DVidRender.h"
 
+#pragma optimize("", off)
+
+#define USE_LOGTRACE
+#define USE_CUSTOM_IO
+
 #define MAX_LOADSTRING 100
 
 // 全局变量: 
@@ -130,7 +135,6 @@ AVPixelFormat GetHwFormat(AVCodecContext *s, const AVPixelFormat *pix_fmts)
 	return ist->hwaccel_pix_fmt;
 }
 
-#define USE_LOGTRACE
 #if defined(USE_LOGTRACE)
 void LogTrace(LPCTSTR pszFormat, ...)  
 {  
@@ -147,6 +151,23 @@ void LogTrace(LPCTSTR pszFormat, ...)
 #define LogTrace(...)
 #endif
 
+#if defined(USE_CUSTOM_IO)
+int my_read_packet(void *opaque, uint8_t *buf, int buf_size)
+{
+	size_t n = fread(buf, 1, buf_size, (FILE*)opaque);
+	return n;
+}
+
+int64_t my_seek(void *opaque, int64_t offset, int whence)
+{
+	if (whence & AVSEEK_SIZE)
+		return -1;
+
+	whence &= ~AVSEEK_FORCE;
+	return _fseeki64((FILE*)opaque, offset, whence);
+}
+#endif
+
 bool g_bAccel = false;
 void PlayVideo(HWND hWnd, const char* filename)
 {
@@ -158,7 +179,18 @@ void PlayVideo(HWND hWnd, const char* filename)
 	av_register_all();//注册解码器
 	//	av_log_set_level(AV_LOG_DEBUG);
 
-	AVFormatContext *fc = NULL;
+	AVFormatContext *fc = avformat_alloc_context();
+
+#if defined(USE_CUSTOM_IO)
+	#define IO_BUFFER_SIZE 32768
+	unsigned char* custom_io_buffer = (unsigned char*) av_malloc(IO_BUFFER_SIZE);
+	FILE *pFile = fopen(filename, "rb");
+	AVIOContext* custom_io = avio_alloc_context(custom_io_buffer, IO_BUFFER_SIZE,
+		AVIO_FLAG_READ, pFile, my_read_packet, NULL, my_seek);
+
+	fc->pb = custom_io;
+#endif
+
 	int res = avformat_open_input(&fc, filename, NULL, NULL);//打开文件
 	if (res < 0) {
 		LogTrace("FFMPEG - error %x in avformat_open_input\n", res);
@@ -316,6 +348,12 @@ void PlayVideo(HWND hWnd, const char* filename)
 
 	avcodec_close(codecctx);
 	avformat_close_input(&fc);
+
+#if defined(USE_CUSTOM_IO)
+	av_freep(&custom_io_buffer);
+	av_free(custom_io);
+	fclose(pFile);
+#endif
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
