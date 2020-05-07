@@ -157,15 +157,6 @@ int my_read_packet(void *opaque, uint8_t *buf, int buf_size)
 	size_t n = fread(buf, 1, buf_size, (FILE*)opaque);
 	return n;
 }
-
-int64_t my_seek(void *opaque, int64_t offset, int whence)
-{
-	if (whence & AVSEEK_SIZE)
-		return -1;
-
-	whence &= ~AVSEEK_FORCE;
-	return _fseeki64((FILE*)opaque, offset, whence);
-}
 #endif
 
 bool g_bAccel = false;
@@ -182,11 +173,12 @@ void PlayVideo(HWND hWnd, const char* filename)
 	AVFormatContext *fc = avformat_alloc_context();
 
 #if defined(USE_CUSTOM_IO)
-	#define IO_BUFFER_SIZE 32768
+	// http://ffmpeg.org/doxygen/trunk/avio_reading_8c-example.html
+	#define IO_BUFFER_SIZE 4096
 	unsigned char* custom_io_buffer = (unsigned char*) av_malloc(IO_BUFFER_SIZE);
 	FILE *pFile = fopen(filename, "rb");
 	AVIOContext* custom_io = avio_alloc_context(custom_io_buffer, IO_BUFFER_SIZE,
-		AVIO_FLAG_READ, pFile, my_read_packet, NULL, my_seek);
+		0, pFile, my_read_packet, NULL, NULL);
 
 	fc->pb = custom_io;
 #endif
